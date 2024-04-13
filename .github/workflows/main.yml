@@ -17,9 +17,7 @@ jobs:
       - name: Get pip cache dir
         id: get-pip-cache-dir
         run: |
-          PIP_CACHE_DIR=$(pip cache dir)
-          echo "::set-output name=pip-cache-dir::${PIP_CACHE_DIR}"
-          echo ${pip-cache-dir}
+          echo `pip cache dir`
 
       - name: Cache dependencies
         id: cache-dependencies
