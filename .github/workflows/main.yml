@@ -17,7 +17,7 @@ jobs:
       - name: Get pip cache dir
         id: pip-cache
         run: |
-          echo ${pip cache dir}
+          echo `pip cache dir`
           echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
