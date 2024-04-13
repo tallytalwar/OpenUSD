@@ -17,7 +17,7 @@ jobs:
       - name: Get pip cache dir
         id: get-pip-cache-dir
         run: |
-          echo `pip cache dir`
+          echo `python3 -m pip cache dir`
 
       - name: Cache dependencies
         id: cache-dependencies
