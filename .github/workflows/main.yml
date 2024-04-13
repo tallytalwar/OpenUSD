@@ -14,7 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pip
+            $HOME/USDgen/build
+          key: ${{ runner.os }}-pip-build-dependencies
+
       - name: Install dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
           sudo apt-get -qq update
           sudo apt-get install -y python3-setuptools libglew-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev
@@ -24,6 +34,14 @@ jobs:
       - name: Build USD
         run: |
           python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
+
+  Invalidate Cache Linux:
+    needs: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invalidate cache
+        run: |
+          echo "::set-output name=cache-key::${{ runner.os }}-pip-build-dependencies-${{ github.sha }}"
 
   macOS:
     runs-on: macos-12
@@ -62,4 +80,4 @@ jobs:
 
       - name: Build USD
         run: |
-          python build_scripts/build_usd.py --no-materialx --build %HOME%/USDgen/build --src %HOME%/USDgen/src %HOME%/USDinst --build-args USD,"-DPXR_ENABLE_PRECOMPILED_HEADERS=OFF" -v
+          python build_scripts/build_usd.py --no-materialx --generator "Visual Studio 16 2019" --build %HOME%/USDgen/build --src %HOME%/USDgen/src %HOME%/USDinst --build-args USD,"-DPXR_ENABLE_PRECOMPILED_HEADERS=OFF" -v
