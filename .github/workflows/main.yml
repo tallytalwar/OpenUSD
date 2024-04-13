@@ -14,38 +14,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get pip cache dir
-        id: get-pip-cache-dir
-        run: |
-          PIP_CACHE_DIR=$(python -c "import os; import site; print(os.path.join(site.USER_BASE, 'cache/pip'))")
-          echo "::set-output name=pip-cache-dir::${PIP_CACHE_DIR}"
-
-      - name: Cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.get-pip-cache-dir.outputs.pip-cache-dir }}
-          key: ${{ runner.os }}-pip-build-dependencies
+      #- name: Cache dependencies
+        #id: cache-dependencies
+        #uses: actions/cache@v4
+        #with:
+          #path: ~/.cache/pip
+          #key: ${{ runner.os }}-pip-build-dependencies
 
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
-          echo "Cache Miss?: {{ steps.cache-dependencies.outputs.cache-hit }}"
+          echo "Cache Miss?: ${{ steps.cache-dependencies.outputs.cache-hit }}"
           sudo apt-get -qq update
           sudo apt-get install -y python3-setuptools libglew-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev
           sudo pip install --upgrade pip
           sudo pip install PySide2 PyOpenGL
 
-      #- name: Build USD
-        #run: |
-          #python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
+      - name: Build USD
+        run: |
+          python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
-      #- name: Cache USD build dependencies
-        #id: cache-usd-build-dependencies
-        #uses: actions/cache@v4
-        #with:
-          #path: $HOME/USDgen/build
-          #key: ${{ runner.os }}-usd-build-dependencies
+      - name: Cache USD build dependencies
+        id: cache-usd-build-dependencies
+        uses: actions/cache@v4
+        with:
+          path: $HOME/USDgen/build
+          key: ${{ runner.os }}-usd-build-dependencies
 
 #  macOS:
     #runs-on: macos-12
