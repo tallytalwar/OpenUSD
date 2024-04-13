@@ -8,7 +8,7 @@ on:
 
 jobs:
   Linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     timeout-minutes: 120
     steps:
       - name: Checkout code
@@ -26,7 +26,7 @@ jobs:
           python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
   macOS:
-    runs-on: macos-latest
+    runs-on: macos-12
     timeout-minutes: 120
     steps:
       - name: Checkout code
@@ -45,7 +45,7 @@ jobs:
           python3 build_scripts/build_usd.py --no-materialx --generator Xcode --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
   Windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     timeout-minutes: 120
     steps:
       - name: Checkout code
