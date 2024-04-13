@@ -17,7 +17,8 @@ jobs:
       - name: Get pip cache dir
         id: get-pip-cache-dir
         run: |
-          pip cache dir
+          PIP_CACHE_DIR=$(python -c "import os; import site; print(os.path.join(site.USER_BASE, 'cache/pip'))")
+          echo "::set-output name=pip-cache-dir::${PIP_CACHE_DIR}"
 
       - name: Cache dependencies
         id: cache-dependencies
