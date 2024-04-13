@@ -14,11 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo ${pip cache dir}
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+
       - name: Cache dependencies
         id: cache-dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: ${{ steps.pip-cache.outputs.dir }}
           key: ${{ runner.os }}-pip-build-dependencies
 
       - name: Install dependencies
