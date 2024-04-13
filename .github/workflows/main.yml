@@ -35,7 +35,7 @@ jobs:
         run: |
           python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
-  Invalidate Cache Linux:
+  Invalidate_Cache_Linux:
     needs: Linux
     runs-on: ubuntu-latest
     steps:
