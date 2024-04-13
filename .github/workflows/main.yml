@@ -55,7 +55,7 @@ jobs:
           export PATH=/Library/Frameworks/Python.framework/Versions/3.11/bin:$PATH
           sudo xcode-select -s /Applications/Xcode_13.3.app/Contents/Developer
           export SYSTEM_VERSION_COMPAT=1
-          sudo pip3 install PySide6 PyOpenGL
+          sudo pip3 install PySide6 PyOpenGL setuptools
           export -n SYSTEM_VERSION_COMPAT
 
       - name: Build USD
