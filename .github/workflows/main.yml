@@ -12,7 +12,22 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-build-dependencies
+
+      - name: Echo cache status for pip dependencies
+        run: |
+          if [[ ${{ steps.cache-dependencies.outputs.cache-hit }} == 'true' ]]; then
+            echo "Cache hit for pip dependencies."
+          else
+            echo "Cache miss for pip dependencies. Installing dependencies..."
+          fi
 
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -22,33 +37,23 @@ jobs:
           sudo pip install --upgrade pip
           sudo pip install PySide2 PyOpenGL
 
-      - name: Build USD
-        run: |
-          python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
+      #- name: Build USD
+        #run: |
+          #python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
-      - name: Cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-            $HOME/USDgen/build
-          key: ${{ runner.os }}-pip-build-dependencies
-
-  Invalidate_Cache_Linux:
-    needs: Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Invalidate cache
-        run: |
-          echo "::set-output name=cache-key::${{ runner.os }}-pip-build-dependencies-${{ github.sha }}"
+      #- name: Cache USD build dependencies
+        #id: cache-usd-build-dependencies
+        #uses: actions/cache@v4
+        #with:
+          #path: $HOME/USDgen/build
+          #key: ${{ runner.os }}-usd-build-dependencies
 
 #  macOS:
     #runs-on: macos-12
     #timeout-minutes: 120
     #steps:
       #- name: Checkout code
-        #uses: actions/checkout@v2
+        #uses: actions/checkout@v3
 
       #- name: Install dependencies
         #run: |
@@ -67,10 +72,10 @@ jobs:
     #timeout-minutes: 120
     #steps:
       #- name: Checkout code
-        #uses: actions/checkout@v2
+        #uses: actions/checkout@v4
 
       #- name: Install Python and dependencies
-        #uses: actions/setup-python@v2
+        #uses: actions/setup-python@v5
         #with:
           #python-version: '3.7'
       #- name: Install dependencies
