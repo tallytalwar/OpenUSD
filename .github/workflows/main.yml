@@ -21,17 +21,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-build-dependencies
 
-      - name: Echo cache status for pip dependencies
-        run: |
-          if [[ ${{ steps.cache-dependencies.outputs.cache-hit }} == 'true' ]]; then
-            echo "Cache hit for pip dependencies."
-          else
-            echo "Cache miss for pip dependencies. Installing dependencies..."
-          fi
-
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
+          echo "Cache Miss?: {{ steps.cache-dependencies.outputs.cache-hit }}"
           sudo apt-get -qq update
           sudo apt-get install -y python3-setuptools libglew-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev
           sudo pip install --upgrade pip
