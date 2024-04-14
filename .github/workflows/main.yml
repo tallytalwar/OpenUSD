@@ -121,7 +121,7 @@ jobs:
           path: |
             USDgen/build
             USDinst
-            !USDgen/build/USD
+            !USDgen/build/OpenUSD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
