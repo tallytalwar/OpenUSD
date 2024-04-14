@@ -23,7 +23,7 @@ jobs:
             !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
-          key: ${{ runner.os }}-build--${{ hashFiles('build_scripts/**') }}
+          key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
