@@ -14,10 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Restore cached artifacts
+        id: cache-usd-build-dependency
         uses: actions/cache/restore@v3
         with:
           path: |
             USDgen/build
+            USDinst
             !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
@@ -34,11 +36,12 @@ jobs:
         run: |
           python3 build_scripts/build_usd.py --no-materialx --build USDgen/build --src USDgen/src USDinst -v
       - name: Save build artifacts to cache
-        id: save-usd-build-dependencies
+        if: steps.cache-usd-build-dependency.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
         with:
           path: |
             USDgen/build
+            USDinst
             !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
@@ -51,10 +54,12 @@ jobs:
       #- name: Checkout code
         #uses: actions/checkout@v3
       #- name: Restore cached artifacts
+        #id: cache-usd-build-dependency
         #uses: actions/cache/restore@v3
         #with:
           #path: |
             #USDgen/build
+            #USDinst
             #!USDgen/build/USD
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
@@ -70,11 +75,12 @@ jobs:
         #run: |
           #python3 build_scripts/build_usd.py --no-materialx --generator Xcode --build USDgen/build --src USDgen/src USDinst -v
       #- name: Save build artifacts to cache
-        #id: save-usd-build-dependencies
+        #if: steps.cache-usd-build-dependency.outputs.cache-hit != 'true'
         #uses: actions/cache/save@v3
         #with:
           #path: |
             #USDgen/build
+            #USDinst
             #!USDgen/build/USD
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
@@ -88,11 +94,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Restore cached artifacts
+        id: cache-usd-build-dependency
         uses: actions/cache/restore@v3
         with:
           path: |
             USDgen/build
-            !USDgen/build/USD
+            USDinst
+            !USDgen/build/OpenUSD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           key: ${{ runner.os }}-build
@@ -108,11 +116,12 @@ jobs:
         run: |
           python build_scripts/build_usd.py --no-materialx --generator "Visual Studio 16 2019" --build USDgen/build --src USDgen/src USDinst --build-args USD,"-DPXR_ENABLE_PRECOMPILED_HEADERS=OFF" -v
       - name: Save build artifacts to cache
-        id: save-usd-build-dependencies
+        if: steps.cache-usd-build-dependency.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
         with:
           path: |
             USDgen/build
+            USDinst
             !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
