@@ -47,44 +47,47 @@ jobs:
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
 
-#  macOS:
-    #runs-on: macos-12
-    #timeout-minutes: 120
-    #steps:
-      #- name: Checkout code
-        #uses: actions/checkout@v3
-      #- name: Restore cached artifacts
-        #id: cache-usd-build-dependency
-        #uses: actions/cache/restore@v3
-        #with:
-          #path: |
-            #USDgen/build
-            #USDinst
-            #!USDgen/build/USD
-          ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
-          ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
-          #key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
-      #- name: Install dependencies
-        #run: |
-          #export PATH=/Library/Frameworks/Python.framework/Versions/3.11/bin:$PATH
-          #sudo xcode-select -s /Applications/Xcode_13.3.app/Contents/Developer
-          #export SYSTEM_VERSION_COMPAT=1
-          #sudo pip3 install PySide6 PyOpenGL setuptools
-          #export -n SYSTEM_VERSION_COMPAT
-      #- name: Build USD
-        #run: |
-          #python3 build_scripts/build_usd.py --no-materialx --generator Xcode --build USDgen/build --src USDgen/src USDinst -v
-      #- name: Save build artifacts to cache
-        #if: steps.cache-usd-build-dependency.outputs.cache-hit != 'true'
-        #uses: actions/cache/save@v3
-        #with:
-          #path: |
-            #USDgen/build
-            #USDinst
-            #!USDgen/build/USD
-          ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
-          ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
-          #key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
+  macOS:
+    runs-on: macos-12
+    timeout-minutes: 120
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Restore cached artifacts
+        id: cache-usd-build-dependency
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            USDgen/build
+            USDinst
+            !USDgen/build/USD
+          #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
+          #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
+          key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
+      - name: Setup and install python dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9 
+          #system-version-compat: 1
+          pip: true
+          packages: |
+            PySide6
+            PyOpenGL
+            setuptools
+      - name: Build USD
+        run: |
+          python3 build_scripts/build_usd.py --no-materialx --generator Xcode --build USDgen/build --src USDgen/src USDinst -v
+      - name: Save build artifacts to cache
+        if: steps.cache-usd-build-dependency.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            USDgen/build
+            USDinst
+            !USDgen/build/USD
+          #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
+          #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
+          key: ${{ runner.os }}-build-${{ hashFiles('build_scripts/**') }}
 
   Windows:
     runs-on: windows-2019
