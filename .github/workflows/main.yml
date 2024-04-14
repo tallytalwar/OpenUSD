@@ -16,7 +16,9 @@ jobs:
       - name: Restore cached artifacts
         uses: actions/cache/restore@v3
         with:
-          path: USDgen/build
+          path: |
+            USDgen/build
+            !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           key: ${{ runner.os }}-build
@@ -51,7 +53,9 @@ jobs:
       #- name: Restore cached artifacts
         #uses: actions/cache/restore@v3
         #with:
-          #path: USDgen/build
+          #path: |
+            #USDgen/build
+            #!USDgen/build/USD
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           ##key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           #key: ${{ runner.os }}-build
@@ -86,7 +90,9 @@ jobs:
       - name: Restore cached artifacts
         uses: actions/cache/restore@v3
         with:
-          path: USDgen/build
+          path: |
+            USDgen/build
+            !USDgen/build/USD
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**', exclude: 'USD/**') }}
           #key: ${{ runner.os }}-build-${{ hashFiles('$GITHUB_WORKSPACE/USDgen/build/**') }}
           key: ${{ runner.os }}-build
