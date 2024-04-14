@@ -48,7 +48,8 @@ jobs:
         id: save-usd-build-dependencies
         uses: actions/cache/save@v3
         with:
-          path: $HOME/USDgen/build
+          path: |
+          $HOME/USDgen/build
           !$HOME/USDgen/build/USD
           key: ${{ runner.os }}-build-${{ hashFiles('$HOME/USDgen/build/**') }}
 
