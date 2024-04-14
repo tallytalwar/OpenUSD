@@ -14,12 +14,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+        # Issues with finding ~/.cache/pip dir
       #- name: Cache dependencies
         #id: cache-dependencies
         #uses: actions/cache@v4
         #with:
           #path: ~/.cache/pip
           #key: ${{ runner.os }}-pip-build-dependencies
+        
+      # Restore cached artifacts from previous builds
+      - name: Restore cached artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: $HOME/USDgen/build
+          key: ${{ runner.os }}-build-${{ hashFiles('$HOME/USDgen/build/**') }}
+          # Cache will be used if available, but if not found, the workflow will continue without failing
+ 
 
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -34,12 +44,13 @@ jobs:
         run: |
           python3 build_scripts/build_usd.py --no-materialx --build $HOME/USDgen/build --src $HOME/USDgen/src $HOME/USDinst -v
 
-      - name: Cache USD build dependencies
-        id: cache-usd-build-dependencies
-        uses: actions/cache@v4
+      - name: Save build artifacts to cache
+        id: save-usd-build-dependencies
+        uses: actions/cache/save@v3
         with:
           path: $HOME/USDgen/build
-          key: ${{ runner.os }}-usd-build-dependencies
+          !$HOME/USDgen/build/USD
+          key: ${{ runner.os }}-build-${{ hashFiles('$HOME/USDgen/build/**') }}
 
 #  macOS:
     #runs-on: macos-12
