@@ -68,7 +68,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9 
-          #system-version-compat: 1
+          system-version-compat: 1
           pip: true
           packages: |
             PySide6
