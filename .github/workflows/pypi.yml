@@ -11,6 +11,7 @@ on:
     branches:
       - dev
       - release
+      - mono-pypi
   workflow_dispatch:
     inputs:
       post_release_tag:
