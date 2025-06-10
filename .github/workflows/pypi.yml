@@ -186,7 +186,7 @@ jobs:
             TAG: cp311
           - VERSION_SPEC: '3.12'
             TAG: cp312
-    runs-on: windows-2019
+    runs-on: windows-2022
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -298,23 +298,23 @@ jobs:
             PYTHON_INTERPRETER: python3          
           - NAME: Windows_Python38
             PYTHON_VERSION_SPEC: '3.8'
-            IMAGE: windows-2019
+            IMAGE: windows-2022
             PYTHON_INTERPRETER: python3
           - NAME: Windows_Python39
             PYTHON_VERSION_SPEC: '3.9'
-            IMAGE: windows-2019
+            IMAGE: windows-2022
             PYTHON_INTERPRETER: python3
           - NAME: Windows_Python310
             PYTHON_VERSION_SPEC: '3.10'
-            IMAGE: windows-2019
+            IMAGE: windows-2022
             PYTHON_INTERPRETER: python3
           - NAME: Windows_Python311
             PYTHON_VERSION_SPEC: '3.11'
-            IMAGE: windows-2019
+            IMAGE: windows-2022
             PYTHON_INTERPRETER: python3
           - NAME: Windows_Python312
             PYTHON_VERSION_SPEC: '3.12'
-            IMAGE: windows-2019
+            IMAGE: windows-2022
             PYTHON_INTERPRETER: python3
     runs-on: ${{ matrix.BUILD_CONFIG.IMAGE }}
     steps:
