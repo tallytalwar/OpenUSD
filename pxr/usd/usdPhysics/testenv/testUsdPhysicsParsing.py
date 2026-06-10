@@ -1377,12 +1377,22 @@ class TestUsdPhysicsParsing(unittest.TestCase):
         scene = UsdPhysics.Scene.Define(stage, '/physicsScene')
         self.assertTrue(scene)
 
-        UsdGeom.Cube.Define(stage, "/cube")
+        cube = UsdGeom.Cube.Define(stage, "/cube")
+
+        # Apply PhysicsCollisionAPI properly so that the parser recognizes
+        # the collider. The custom geometry token, however, is left
+        # *unregistered* and authored directly into apiSchemas -- this is the
+        # case the parser's custom-shape path must handle: a token whose schema
+        # plugin is not (yet) available at parse time.
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
 
         layer = stage.GetEditTarget().GetLayer()
         primSpec = Sdf.CreatePrimInLayer(layer, "/cube")
-        listOp = Sdf.TokenListOp()
-        listOp.prependedItems = ["MyCustomGeometryAPI", "PhysicsCollisionAPI"]
+        # Prepend the unregistered custom token explicitly to preserve whatever
+        # is already there.
+        listOp = primSpec.GetInfo(Usd.Tokens.apiSchemas)
+        listOp.prependedItems = ["MyCustomGeometryAPI"] + list(
+            listOp.prependedItems)
         primSpec.SetInfo(Usd.Tokens.apiSchemas, listOp)
 
         custom_tokens = UsdPhysics.UsdPhysicsCustomTokens()
@@ -1428,14 +1438,18 @@ class TestUsdPhysicsParsing(unittest.TestCase):
         expected = []
         for k in range(NUM_CUSTOM_COLLIDERS):
             prim_path = f"/Body/CustomCollider_{k}"
-            UsdGeom.Cube.Define(stage, prim_path)
+            cube = UsdGeom.Cube.Define(stage, prim_path)
 
             token = token_a if k % 2 == 0 else token_b
             expected.append((prim_path, token))
 
+            # Apply PhysicsCollisionAPI properly, then prepend the unregistered
+            # custom token to the authored apiSchemas list op so
+            # PhysicsCollisionAPI is preserved.
+            UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
             primSpec = Sdf.CreatePrimInLayer(layer, prim_path)
-            listOp = Sdf.TokenListOp()
-            listOp.prependedItems = [token, "PhysicsCollisionAPI"]
+            listOp = primSpec.GetInfo(Usd.Tokens.apiSchemas)
+            listOp.prependedItems = [token] + list(listOp.prependedItems)
             primSpec.SetInfo(Usd.Tokens.apiSchemas, listOp)
 
         custom_tokens = UsdPhysics.CustomUsdPhysicsTokens()

@@ -10,6 +10,7 @@
 #include "pxr/base/gf/transform.h"
 
 #include "pxr/usd/usd/primRange.h"
+#include "pxr/usd/usd/schemaRegistry.h"
 
 #include "pxr/usd/usdGeom/gprim.h"
 #include "pxr/usd/usdGeom/mesh.h"
@@ -109,10 +110,23 @@ UsdPhysicsObjectType _GetCollisionType(const UsdPrim& prim,
     UsdPhysicsObjectType retVal = UsdPhysicsObjectType::Undefined;
 
     // Custom shape handling, custom shape can be defined by the user
-    // we need to check whether a custom collisionAPI or type is on a prim
+    // we need to check whether a custom collisionAPI or type is on a prim.
+    //
+    // NOTE: this deliberately scans the directly-authored applied-API-schema
+    // token vector and does NOT use HasAPI/IsA. Custom shapes are defined by
+    // the caller (e.g. a simulator) and passed in via 'customTokens'. The
+    // plugins that define these custom geometry schema types may not be
+    // available at parse time -- the parser typically runs before the
+    // simulator kicks in, and it is the simulator's own infrastructure that
+    // brings those plugins (and hence the schema registrations) in. So the
+    // schemas for these custom tokens may not be registered when we parse,
+    // and HasAPI/IsA would return false for them even though they are valid.
+    // Matching the authored token by name is the mechanism that works
+    // regardless of whether the schema is registered yet, hence
+    // GetPrimTypeInfo().GetAppliedAPISchemas() here by design.
     if (customTokens)
     {
-        const TfTokenVector& apis = 
+        const TfTokenVector& apis =
             prim.GetPrimTypeInfo().GetAppliedAPISchemas();
 
         const TfToken& primType = prim.GetTypeName();
@@ -2584,12 +2598,6 @@ bool UsdPhysicsLoadStageFromPrimRange(
         }
     }
 
-    static const TfToken gRigidBodyAPIToken("PhysicsRigidBodyAPI");
-    static const TfToken gCollisionAPIToken("PhysicsCollisionAPI");
-    static const TfToken gArticulationRootAPIToken(
-        "PhysicsArticulationRootAPI");
-    static const TfToken gMaterialAPIToken("PhysicsMaterialAPI");
-
     bool defaultSimulationOwner = false;
     std::unordered_set<SdfPath, SdfPath::Hash> simulationOwnersSet;
     if (simulationOwners)
@@ -2634,33 +2642,38 @@ bool UsdPhysicsLoadStageFromPrimRange(
 
             uint32_t apiFlags = 0;
 
-            // Here we need to get the applied schemas to get schemas
-            // that are also inherited.
-            const TfTokenVector& apis = prim.GetAppliedSchemas();
-
-            for (const TfToken& token : apis)
+            // Determine which physics API schemas are applied. We use
+            // HasAPIInFamily rather than scanning the applied-schema token
+            // vector so that we only report schemas that are actually
+            // registered in the running ecosystem (token comparison would
+            // report a schema as present even when its type is unknown).
+            // The family variant additionally matches any version of the
+            // schema (e.g. a future PhysicsCollisionAPI_1).
+            using _VersionPolicy = UsdSchemaRegistry::VersionPolicy;
+            if (prim.HasAPIInFamily<UsdPhysicsArticulationRootAPI>(
+                    _VersionPolicy::All))
             {
-                if (token == gArticulationRootAPIToken)
-                {
-                    apiFlags |= uint32_t(_SchemaAPIFlag::ArticulationRootAPI);
-                }
-                if (token == gCollisionAPIToken)
-                {
-                    apiFlags |= uint32_t(_SchemaAPIFlag::CollisionAPI);
-                }
-                if (token == gRigidBodyAPIToken)
-                {
-                    apiFlags |= uint32_t(_SchemaAPIFlag::RigidBodyAPI);
-                }
-                if (!apiFlags && token == gMaterialAPIToken)
-                {
-                    apiFlags |= uint32_t(_SchemaAPIFlag::MaterialAPI);
-                }
+                apiFlags |= uint32_t(_SchemaAPIFlag::ArticulationRootAPI);
+            }
+            if (prim.HasAPIInFamily<UsdPhysicsCollisionAPI>(
+                    _VersionPolicy::All))
+            {
+                apiFlags |= uint32_t(_SchemaAPIFlag::CollisionAPI);
+            }
+            if (prim.HasAPIInFamily<UsdPhysicsRigidBodyAPI>(
+                    _VersionPolicy::All))
+            {
+                apiFlags |= uint32_t(_SchemaAPIFlag::RigidBodyAPI);
+            }
+            if (!apiFlags && prim.HasAPIInFamily<UsdPhysicsMaterialAPI>(
+                    _VersionPolicy::All))
+            {
+                apiFlags |= uint32_t(_SchemaAPIFlag::MaterialAPI);
             }
 
-            if (typeInfo.GetSchemaType().IsA<UsdGeomPointInstancer>())
+            if (prim.IsInFamily<UsdGeomPointInstancer>(_VersionPolicy::All))
             {
-                // Skip the subtree for point instancers, those have to be 
+                // Skip the subtree for point instancers, those have to be
                 // traversed per prototype
                 iter.PruneChildren();
             }
@@ -2680,11 +2693,12 @@ bool UsdPhysicsLoadStageFromPrimRange(
                 }
             }
 
-            if (typeInfo.GetSchemaType().IsA<UsdPhysicsScene>())
+            if (prim.IsInFamily<UsdPhysicsScene>(_VersionPolicy::All))
             {
                 scenePrims.push_back(prim);
             }
-            else if (typeInfo.GetSchemaType().IsA<UsdPhysicsCollisionGroup>())
+            else if (prim.IsInFamily<UsdPhysicsCollisionGroup>(
+                         _VersionPolicy::All))
             {
                 collisionGroupPrims.push_back(prim);
             }
@@ -2692,25 +2706,29 @@ bool UsdPhysicsLoadStageFromPrimRange(
             {
                 materialPrims.push_back(prim);
             }
-            else if (typeInfo.GetSchemaType().IsA<UsdPhysicsJoint>())
+            else if (prim.IsInFamily<UsdPhysicsJoint>(_VersionPolicy::All))
             {
-                if (typeInfo.GetSchemaType().IsA<UsdPhysicsFixedJoint>())
+                if (prim.IsInFamily<UsdPhysicsFixedJoint>(_VersionPolicy::All))
                 {
                     physicsFixedJointPrims.push_back(prim);
                 }
-                else if (typeInfo.GetSchemaType().IsA<UsdPhysicsRevoluteJoint>())
+                else if (prim.IsInFamily<UsdPhysicsRevoluteJoint>(
+                             _VersionPolicy::All))
                 {
                     physicsRevoluteJointPrims.push_back(prim);
                 }
-                else if (typeInfo.GetSchemaType().IsA<UsdPhysicsPrismaticJoint>())
+                else if (prim.IsInFamily<UsdPhysicsPrismaticJoint>(
+                             _VersionPolicy::All))
                 {
                     physicsPrismaticJointPrims.push_back(prim);
                 }
-                else if (typeInfo.GetSchemaType().IsA<UsdPhysicsSphericalJoint>())
+                else if (prim.IsInFamily<UsdPhysicsSphericalJoint>(
+                             _VersionPolicy::All))
                 {
                     physicsSphericalJointPrims.push_back(prim);
                 }
-                else if (typeInfo.GetSchemaType().IsA<UsdPhysicsDistanceJoint>())
+                else if (prim.IsInFamily<UsdPhysicsDistanceJoint>(
+                             _VersionPolicy::All))
                 {
                     physicsDistanceJointPrims.push_back(prim);
                 }
